@@ -1,0 +1,7 @@
+{
+    "action_name": "neuro-action",
+    "action_task_id": "{{ cookiecutter.action_name.lower().replace(' ', '_').replace('-', '_') }}",
+    "action_code_directory": "src",
+    "action_description": "",
+    "preserve action template hints": "no"
+}

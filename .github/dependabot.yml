@@ -1,0 +1,22 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+  allow:
+    - dependency-type: "all"
+  reviewers:
+    - neuro-inc/mlops
+- package-ecosystem: docker
+  directory: "/{{cookiecutter.project_dir}}"
+  schedule:
+    interval: daily
+  reviewers:
+    - neuro-inc/mlops
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: daily
+  reviewers:
+    - neuro-inc/mlops

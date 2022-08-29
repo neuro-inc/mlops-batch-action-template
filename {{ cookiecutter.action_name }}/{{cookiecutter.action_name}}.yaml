@@ -1,0 +1,80 @@
+kind: batch
+name: {{ cookiecutter.action_name }}
+descr: {{ cookiecutter.action_description }}
+
+# More information re syntax:
+# - https://neu-ro.gitbook.io/neuro-flow/reference/batch-workflow-syntax
+# - https://neu-ro.gitbook.io/neuro-flow/reference/actions-syntax
+
+inputs:
+  artifact_alias:
+    default: ""
+    descr: Input artifact alias
+
+outputs:
+  artifact_alias:
+    descr: {{ cookiecutter.action_name }} action output artifact alias
+    value: $[[ needs.{{ cookiecutter.action_task_id }}.outputs.artifact_alias ]]
+
+cache:
+  strategy: "inherit"
+  ## possible strategies:
+  ##  - "none" -- don't use caching for this action.
+  ##  - "inherit" -- inherit the value from the batch workflow that called this action.
+  ##  - "default" -- basic caching algorithm that reuses cached outputs if 
+  ##    task definition and all expression contexts available in task expressions are the same.
+  life_span: "30d"
+  ## Cache invalidation duration. Possigle values: float - represents duration in seconds 
+  ##  or string in format "1d6h15m45s" (1 day, 6 hours, 15 minutes, 45 seconds).
+
+images:
+  {{ cookiecutter.action_task_id }}:
+    ref: >
+      image:/$[[ project.owner ]]/$[[ project.id ]]/{{ cookiecutter.action_name }}:$[[ hash_files_relative(flow.action_path, "{{ cookiecutter.action_code_directory }}/**/*") ]]
+    context: $[[ flow.action_path / "{{ cookiecutter.action_code_directory }}" ]]
+    dockerfile: $[[ flow.action_path / "{{ cookiecutter.action_code_directory }}/Dockerfile" ]]
+    ## Describes resource preset to be used during the image build:
+    # build_preset: cpu-small
+    volumes:
+      ## Volumes to mount into the builder job
+      - secret:/mrsmariyadavydova/git-id-rsa:/root/.ssh/id_rsa
+    ## You could also add env vars which will be availalbe within the builder job:
+    # env:
+    #   key: value
+    ## You specify build args for image creation
+    # build_args:
+    # - arg1=val1
+    # - arg2=val2
+    ## Force neuro-flow revuild image each for each bake
+    # force_rebuild: true
+
+## Enumerate volumes needed for this action:
+# volumes:
+#   volume_id:
+#     remote: storage:some/path
+#     mount: /path/in/job
+
+tasks:
+  ## Tasks object contains list of task definition with optional dependencies.
+  - id: {{ cookiecutter.action_task_id }}
+    ## Specify task IDs required to perform the current task.
+    ## Could be list, implying successfuly completed dependency,
+    ##  or mapping between task ID and it's desired state
+    needs: [ ]
+    ## Specify conditions when the task is enabled (always by default):
+    # enable: $[[ success(needs.previous_task_ID) ]]
+    image: $[[ images.{{ cookiecutter.action_task_id }}.ref ]]
+    preset: cpu-small
+    volumes:
+      - secret:/mrsmariyadavydova/aws-use1-config:/var/secrets/aws/config
+      - secret:/mrsmariyadavydova/aws-use1-credentials:/var/secrets/aws/credentials
+      - secret:/yevheniisemendiak/aws-all-s3-credentials:/var/secrets/aws/credentials-pca-pipeline
+    env:
+      AWS_CONFIG_FILE: /var/secrets/aws/config
+      AWS_SHARED_CREDENTIALS_FILE: /var/secrets/aws/credentials
+      WANDB_API_KEY: secret:/mrsmariyadavydova/wandb-token
+      WANDB_PROJECT: pca-pipeline
+      WABUCKET_AWS_CREDENTIALS_FILE: /var/secrets/aws/credentials-pca-pipeline
+    bash: |
+      echo "Add action code here"
+      echo "::set-output name=artifact_alias::val"

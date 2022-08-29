@@ -1,0 +1,1 @@
+wabucketref @ git+https://github.com/neuro-inc/mlops-wandb-bucket-ref.git@v22.5.5
