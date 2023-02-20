@@ -1,5 +1,5 @@
 -r base.txt
-mypy==0.961
+mypy==1.0.1
 pipx==1.1.0
 pre-commit==2.20.0
 pytest==6.2.5
